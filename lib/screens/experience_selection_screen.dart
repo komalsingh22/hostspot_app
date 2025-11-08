@@ -20,13 +20,46 @@ class ExperienceSelectionScreen extends ConsumerStatefulWidget {
 class _ExperienceSelectionScreenState
     extends ConsumerState<ExperienceSelectionScreen> {
   final TextEditingController _descriptionController = TextEditingController();
+  final FocusNode _descriptionFocusNode = FocusNode();
+  final ScrollController _scrollController = ScrollController();
   final int _maxCharacterLimit = 250;
   final List<Experience> _displayedExperiences = [];
+  final GlobalKey _descriptionFieldKey = GlobalKey();
 
   @override
   void initState() {
     super.initState();
     _descriptionController.addListener(_onDescriptionChanged);
+    _descriptionFocusNode.addListener(_onDescriptionFocusChanged);
+  }
+
+  void _onDescriptionFocusChanged() {
+    if (_descriptionFocusNode.hasFocus && mounted) {
+      // Scroll to text field when focused
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        
+        if (_scrollController.hasClients) {
+          // Scroll to bottom to ensure text field is visible
+          _scrollController.animateTo(
+            _scrollController.position.maxScrollExtent,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+          );
+        } else if (_descriptionFieldKey.currentContext != null) {
+          // Fallback: try ensureVisible if scroll controller not ready
+          try {
+            Scrollable.ensureVisible(
+              _descriptionFieldKey.currentContext!,
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
+            );
+          } catch (e) {
+            // Silently handle error - widget might not be in scrollable context yet
+          }
+        }
+      });
+    }
   }
 
   void _onDescriptionChanged() {
@@ -80,7 +113,10 @@ class _ExperienceSelectionScreenState
   @override
   void dispose() {
     _descriptionController.removeListener(_onDescriptionChanged);
+    _descriptionFocusNode.removeListener(_onDescriptionFocusChanged);
     _descriptionController.dispose();
+    _descriptionFocusNode.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -104,6 +140,7 @@ class _ExperienceSelectionScreenState
 
     return Scaffold(
       backgroundColor: const Color(0xFF1A1A1A),
+      resizeToAvoidBottomInset: true,
       body: SafeArea(
         child: Column(
           children: [
@@ -118,12 +155,23 @@ class _ExperienceSelectionScreenState
                       ? selectionState.experiences
                       : experiences;
 
+                  final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
+                  final isKeyboardVisible = keyboardHeight > 0;
+                  
                   return SingleChildScrollView(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    controller: _scrollController,
+                    padding: EdgeInsets.only(
+                      left: 20,
+                      right: 20,
+                      bottom: keyboardHeight > 0 ? 20 : 0,
+                    ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const SizedBox(height: 20),
+                        if (!isKeyboardVisible) 
+                          SizedBox(
+                            height: MediaQuery.of(context).size.height * 0.15,
+                          ),
                         // Step indicator
                         const Text(
                           '01',
@@ -157,6 +205,7 @@ class _ExperienceSelectionScreenState
                         // Description text field
                         _buildDescriptionField(),
                         const SizedBox(height: 32),
+                        if (!isKeyboardVisible) const SizedBox(height: 20),
                       ],
                     ),
                   );
@@ -259,6 +308,7 @@ class _ExperienceSelectionScreenState
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
+          key: _descriptionFieldKey,
           decoration: BoxDecoration(
             color: const Color(0xFF2A2A2A),
             borderRadius: BorderRadius.circular(12),
@@ -269,6 +319,7 @@ class _ExperienceSelectionScreenState
           ),
           child: TextField(
             controller: _descriptionController,
+            focusNode: _descriptionFocusNode,
             maxLines: 5,
             maxLength: _maxCharacterLimit,
             style: const TextStyle(color: Colors.white, fontSize: 16),
