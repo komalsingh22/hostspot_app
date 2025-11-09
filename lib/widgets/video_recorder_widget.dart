@@ -78,7 +78,7 @@ class VideoRecorderWidgetState extends ConsumerState<VideoRecorderWidget> {
           onStop: (path, duration, saved) {
             // Set recording state to false
             ref.read(questionProvider.notifier).setRecordingVideo(false);
-            
+
             if (saved && path != null) {
               ref
                   .read(questionProvider.notifier)
@@ -270,9 +270,9 @@ class _VideoRecordingScreenState extends State<VideoRecordingScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error stopping recording: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error stopping recording: $e')));
       }
       widget.onStop(null, Duration.zero, false);
     }

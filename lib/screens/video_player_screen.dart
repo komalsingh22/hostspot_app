@@ -27,12 +27,12 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
     try {
       final controller = VideoPlayerController.file(File(widget.videoPath));
       await controller.initialize();
-      
+
       if (!mounted) {
         controller.dispose();
         return;
       }
-      
+
       _videoPlayerController = controller;
       _chewieController = ChewieController(
         videoPlayerController: controller,
@@ -42,15 +42,15 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
         allowMuting: true,
         showControls: true,
       );
-      
+
       setState(() {
         _isInitialized = true;
       });
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading video: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error loading video: $e')));
         Navigator.pop(context);
       }
     }
@@ -68,17 +68,13 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
     if (!_isInitialized || _chewieController == null) {
       return const Scaffold(
         backgroundColor: Colors.black,
-        body: Center(
-          child: CircularProgressIndicator(color: Colors.white),
-        ),
+        body: Center(child: CircularProgressIndicator(color: Colors.white)),
       );
     }
 
     return Scaffold(
       backgroundColor: Colors.black,
-      body: Chewie(
-        controller: _chewieController!,
-      ),
+      body: Chewie(controller: _chewieController!),
     );
   }
 }

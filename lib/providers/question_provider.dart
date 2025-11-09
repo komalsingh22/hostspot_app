@@ -39,8 +39,12 @@ class QuestionState {
       videoPath: clearVideoPath ? null : (videoPath ?? this.videoPath),
       isRecordingAudio: isRecordingAudio ?? this.isRecordingAudio,
       isRecordingVideo: isRecordingVideo ?? this.isRecordingVideo,
-      audioDuration: clearAudioDuration ? null : (audioDuration ?? this.audioDuration),
-      videoDuration: clearVideoDuration ? null : (videoDuration ?? this.videoDuration),
+      audioDuration: clearAudioDuration
+          ? null
+          : (audioDuration ?? this.audioDuration),
+      videoDuration: clearVideoDuration
+          ? null
+          : (videoDuration ?? this.videoDuration),
     );
   }
 

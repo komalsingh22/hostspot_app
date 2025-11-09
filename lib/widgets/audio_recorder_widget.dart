@@ -44,7 +44,7 @@ class AudioRecorderWidgetState extends ConsumerState<AudioRecorderWidget> {
         });
       }
     });
-    
+
     // Listen for player completion
     _audioPlayer.onPlayerComplete.listen((_) {
       // ignore: avoid_print
@@ -69,17 +69,17 @@ class AudioRecorderWidgetState extends ConsumerState<AudioRecorderWidget> {
     try {
       // ignore: avoid_print
       print('🎤 [AUDIO RECORDER] Starting recording...');
-      
+
       // Check if recorder is already recording
       final isAlreadyRecording = await _audioRecorder.isRecording();
       // ignore: avoid_print
       print('🎤 [AUDIO RECORDER] Is already recording: $isAlreadyRecording');
-      
+
       if (isAlreadyRecording) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Already recording')),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('Already recording')));
         }
         return;
       }
@@ -89,14 +89,20 @@ class AudioRecorderWidgetState extends ConsumerState<AudioRecorderWidget> {
       print('🎤 [AUDIO RECORDER] Requesting microphone permission...');
       final status = await Permission.microphone.request();
       // ignore: avoid_print
-      print('🎤 [AUDIO RECORDER] Permission status: $status (granted: ${status.isGranted})');
-      
+      print(
+        '🎤 [AUDIO RECORDER] Permission status: $status (granted: ${status.isGranted})',
+      );
+
       if (!status.isGranted) {
         // ignore: avoid_print
         print('❌ [AUDIO RECORDER] Microphone permission denied');
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Microphone permission is required to record audio')),
+            const SnackBar(
+              content: Text(
+                'Microphone permission is required to record audio',
+              ),
+            ),
           );
         }
         return;
@@ -128,10 +134,12 @@ class AudioRecorderWidgetState extends ConsumerState<AudioRecorderWidget> {
       final isRecordingNow = await _audioRecorder.isRecording();
       // ignore: avoid_print
       print('🎤 [AUDIO RECORDER] Recording started: $isRecordingNow');
-      
+
       if (!isRecordingNow) {
         // ignore: avoid_print
-        print('❌ [AUDIO RECORDER] Failed to start recording - isRecording() returned false');
+        print(
+          '❌ [AUDIO RECORDER] Failed to start recording - isRecording() returned false',
+        );
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Failed to start recording')),
@@ -154,30 +162,38 @@ class AudioRecorderWidgetState extends ConsumerState<AudioRecorderWidget> {
       _amplitudeUpdateCount = 0; // Reset counter when starting recording
       _amplitudeSubscription = _audioRecorder
           .onAmplitudeChanged(const Duration(milliseconds: 100))
-          .listen((amplitude) {
-        if (mounted && _isRecording) {
-          _amplitudeUpdateCount++;
-          // Log amplitude values every 10 updates (~1 second)
-          if (_amplitudeUpdateCount % 10 == 0) {
-            final normalized = ((amplitude.current + 160) / 160).clamp(0.0, 1.0);
-            // ignore: avoid_print
-            print('📊 [AUDIO RECORDER] Amplitude - current: ${amplitude.current.toStringAsFixed(2)} dB, normalized: ${normalized.toStringAsFixed(2)}');
-          }
-          
-          setState(() {
-            // Normalize amplitude (typically ranges from -160 to 0 dB)
-            // Convert to 0-1 range for visualization
-            _currentAmplitude = (amplitude.current + 160) / 160;
-            _currentAmplitude = _currentAmplitude.clamp(0.0, 1.0);
-            
-            // Update waveform data with real amplitude
-            _updateWaveformWithAmplitude(_currentAmplitude);
-          });
-        }
-      }, onError: (error) {
-        // ignore: avoid_print
-        print('❌ [AUDIO RECORDER] Amplitude stream error: $error');
-      });
+          .listen(
+            (amplitude) {
+              if (mounted && _isRecording) {
+                _amplitudeUpdateCount++;
+                // Log amplitude values every 10 updates (~1 second)
+                if (_amplitudeUpdateCount % 10 == 0) {
+                  final normalized = ((amplitude.current + 160) / 160).clamp(
+                    0.0,
+                    1.0,
+                  );
+                  // ignore: avoid_print
+                  print(
+                    '📊 [AUDIO RECORDER] Amplitude - current: ${amplitude.current.toStringAsFixed(2)} dB, normalized: ${normalized.toStringAsFixed(2)}',
+                  );
+                }
+
+                setState(() {
+                  // Normalize amplitude (typically ranges from -160 to 0 dB)
+                  // Convert to 0-1 range for visualization
+                  _currentAmplitude = (amplitude.current + 160) / 160;
+                  _currentAmplitude = _currentAmplitude.clamp(0.0, 1.0);
+
+                  // Update waveform data with real amplitude
+                  _updateWaveformWithAmplitude(_currentAmplitude);
+                });
+              }
+            },
+            onError: (error) {
+              // ignore: avoid_print
+              print('❌ [AUDIO RECORDER] Amplitude stream error: $error');
+            },
+          );
       // ignore: avoid_print
       print('✅ [AUDIO RECORDER] Amplitude listener set up successfully');
 
@@ -208,9 +224,9 @@ class AudioRecorderWidgetState extends ConsumerState<AudioRecorderWidget> {
       // ignore: avoid_print
       print('❌ [AUDIO RECORDER] Stack trace: $stackTrace');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error starting recording: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error starting recording: $e')));
       }
       setState(() {
         _isRecording = false;
@@ -237,8 +253,10 @@ class AudioRecorderWidgetState extends ConsumerState<AudioRecorderWidget> {
       // ignore: avoid_print
       print('🛑 [AUDIO RECORDER] Current recording state: $_isRecording');
       // ignore: avoid_print
-      print('🛑 [AUDIO RECORDER] Recorded duration: ${_formatDuration(_recordedDuration)}');
-      
+      print(
+        '🛑 [AUDIO RECORDER] Recorded duration: ${_formatDuration(_recordedDuration)}',
+      );
+
       _timer?.cancel();
       _amplitudeSubscription?.cancel();
       _amplitudeSubscription = null;
@@ -283,29 +301,32 @@ class AudioRecorderWidgetState extends ConsumerState<AudioRecorderWidget> {
       if (save && path != null) {
         // ignore: avoid_print
         print('💾 [AUDIO RECORDER] Saving recording to: $path');
-        
+
         // Verify file exists and has content
         final file = File(path);
         final fileExists = file.existsSync();
         // ignore: avoid_print
         print('💾 [AUDIO RECORDER] File exists: $fileExists');
-        
+
         if (fileExists) {
           final fileSize = await file.length();
           // ignore: avoid_print
           print('💾 [AUDIO RECORDER] File size: $fileSize bytes');
-          
+
           if (fileSize > 0) {
-            ref.read(questionProvider.notifier).setAudioPath(
-                  path,
-                  duration: _recordedDuration,
-                );
+            ref
+                .read(questionProvider.notifier)
+                .setAudioPath(path, duration: _recordedDuration);
             // ignore: avoid_print
-            print('✅ [AUDIO RECORDER] Recording saved successfully: $path (${_formatDuration(_recordedDuration)})');
+            print(
+              '✅ [AUDIO RECORDER] Recording saved successfully: $path (${_formatDuration(_recordedDuration)})',
+            );
             if (mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
-                  content: Text('Recording saved (${_formatDuration(_recordedDuration)})'),
+                  content: Text(
+                    'Recording saved (${_formatDuration(_recordedDuration)})',
+                  ),
                   duration: const Duration(seconds: 2),
                 ),
               );
@@ -339,19 +360,22 @@ class AudioRecorderWidgetState extends ConsumerState<AudioRecorderWidget> {
             if (fallbackFile.existsSync()) {
               final fileSize = await fallbackFile.length();
               // ignore: avoid_print
-              print('💾 [AUDIO RECORDER] Fallback file exists, size: $fileSize bytes');
-              
+              print(
+                '💾 [AUDIO RECORDER] Fallback file exists, size: $fileSize bytes',
+              );
+
               if (fileSize > 0) {
-                ref.read(questionProvider.notifier).setAudioPath(
-                      _audioPath!,
-                      duration: _recordedDuration,
-                    );
+                ref
+                    .read(questionProvider.notifier)
+                    .setAudioPath(_audioPath!, duration: _recordedDuration);
                 // ignore: avoid_print
                 print('✅ [AUDIO RECORDER] Recording saved using fallback path');
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('Recording saved (${_formatDuration(_recordedDuration)})'),
+                      content: Text(
+                        'Recording saved (${_formatDuration(_recordedDuration)})',
+                      ),
                       duration: const Duration(seconds: 2),
                     ),
                   );
@@ -392,11 +416,15 @@ class AudioRecorderWidgetState extends ConsumerState<AudioRecorderWidget> {
             if (file.existsSync()) {
               await file.delete();
               // ignore: avoid_print
-              print('🗑️ [AUDIO RECORDER] Cancelled audio path file deleted: $_audioPath');
+              print(
+                '🗑️ [AUDIO RECORDER] Cancelled audio path file deleted: $_audioPath',
+              );
             }
           } catch (e) {
             // ignore: avoid_print
-            print('⚠️ [AUDIO RECORDER] Error deleting cancelled audio path file: $e');
+            print(
+              '⚠️ [AUDIO RECORDER] Error deleting cancelled audio path file: $e',
+            );
           }
         }
         setState(() {
@@ -404,9 +432,9 @@ class AudioRecorderWidgetState extends ConsumerState<AudioRecorderWidget> {
           _audioPath = null;
         });
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Recording cancelled')),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('Recording cancelled')));
         }
       }
     } catch (e, stackTrace) {
@@ -415,9 +443,9 @@ class AudioRecorderWidgetState extends ConsumerState<AudioRecorderWidget> {
       // ignore: avoid_print
       print('❌ [AUDIO RECORDER] Stack trace: $stackTrace');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error stopping recording: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error stopping recording: $e')));
       }
       setState(() {
         _isRecording = false;
@@ -436,9 +464,9 @@ class AudioRecorderWidgetState extends ConsumerState<AudioRecorderWidget> {
         // ignore: avoid_print
         print('❌ [AUDIO RECORDER] Audio file not found: $path');
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Audio file not found')),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('Audio file not found')));
         }
         return;
       }
@@ -446,7 +474,7 @@ class AudioRecorderWidgetState extends ConsumerState<AudioRecorderWidget> {
       final fileSize = await file.length();
       // ignore: avoid_print
       print('▶️ [AUDIO RECORDER] Audio file size: $fileSize bytes');
-      
+
       await _audioPlayer.play(DeviceFileSource(path));
       // ignore: avoid_print
       print('✅ [AUDIO RECORDER] Audio playback started');
@@ -459,9 +487,9 @@ class AudioRecorderWidgetState extends ConsumerState<AudioRecorderWidget> {
       // ignore: avoid_print
       print('❌ [AUDIO RECORDER] Stack trace: $stackTrace');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error playing audio: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error playing audio: $e')));
       }
       setState(() {
         _isPlaying = false;
@@ -477,9 +505,9 @@ class AudioRecorderWidgetState extends ConsumerState<AudioRecorderWidget> {
       });
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error pausing audio: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error pausing audio: $e')));
       }
     }
   }
@@ -716,7 +744,7 @@ class WaveformPainter extends CustomPainter {
     for (int i = 0; i < waveformData.length; i++) {
       final amplitude = waveformData[i].clamp(0.0, 1.0);
       final height = amplitude * maxHeight;
-      
+
       // Ensure minimum height for visibility
       final barHeight = height < 2.0 ? 2.0 : height;
       final x = i * barWidth + barWidth / 2;

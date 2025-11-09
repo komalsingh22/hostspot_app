@@ -38,7 +38,7 @@ class _ExperienceSelectionScreenState
       // Scroll to text field when focused
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
-        
+
         if (_scrollController.hasClients) {
           // Scroll to bottom to ensure text field is visible
           _scrollController.animateTo(
@@ -155,9 +155,11 @@ class _ExperienceSelectionScreenState
                       ? selectionState.experiences
                       : experiences;
 
-                  final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
+                  final keyboardHeight = MediaQuery.of(
+                    context,
+                  ).viewInsets.bottom;
                   final isKeyboardVisible = keyboardHeight > 0;
-                  
+
                   return SingleChildScrollView(
                     controller: _scrollController,
                     padding: EdgeInsets.only(
@@ -168,7 +170,7 @@ class _ExperienceSelectionScreenState
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        if (!isKeyboardVisible) 
+                        if (!isKeyboardVisible)
                           SizedBox(
                             height: MediaQuery.of(context).size.height * 0.15,
                           ),
@@ -353,28 +355,41 @@ class _ExperienceSelectionScreenState
       child: SizedBox(
         width: double.infinity,
         height: 56,
-        child: ElevatedButton(
-          onPressed: isEnabled ? _handleNext : null,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: isEnabled
-                ? const Color(0xFF2A2A2A)
-                : Colors.grey[800],
-            foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            elevation: 0,
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            gradient: isEnabled
+                ? const LinearGradient(
+                    colors: [Color(0xFF222222), Color(0xFF999999)],
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                  )
+                : null, // No gradient when disabled
+            color: isEnabled
+                ? null
+                : Colors.grey[800], // Solid color when disabled
           ),
-          child: const Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                'Next',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+          child: ElevatedButton(
+            onPressed: isEnabled ? _handleNext : null,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.transparent, // Make button transparent
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
               ),
-              SizedBox(width: 8),
-              Icon(Icons.arrow_forward, size: 20),
-            ],
+              elevation: 0,
+            ),
+            child: const Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  'Next',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                ),
+                SizedBox(width: 8),
+                Icon(Icons.arrow_forward, size: 20),
+              ],
+            ),
           ),
         ),
       ),

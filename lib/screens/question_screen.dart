@@ -244,18 +244,13 @@ class _QuestionScreenState extends ConsumerState<QuestionScreen> {
                         isActive: questionState.isRecordingAudio,
                         onTap: () {
                           if (!questionState.hasAudio) {
-                            _audioRecorderKey.currentState
-                                ?.startRecording();
+                            _audioRecorderKey.currentState?.startRecording();
                           }
                         },
                       ),
                     ),
                     // Separator
-                    Container(
-                      width: 1,
-                      height: 56,
-                      color: Colors.grey[700],
-                    ),
+                    Container(width: 1, height: 56, color: Colors.grey[700]),
                     // Video button
                     Expanded(
                       child: _buildRecordButton(
@@ -263,8 +258,7 @@ class _QuestionScreenState extends ConsumerState<QuestionScreen> {
                         isActive: questionState.isRecordingVideo,
                         onTap: () {
                           if (!questionState.hasVideo) {
-                            _videoRecorderKey.currentState
-                                ?.startRecording();
+                            _videoRecorderKey.currentState?.startRecording();
                           }
                         },
                       ),
@@ -280,29 +274,39 @@ class _QuestionScreenState extends ConsumerState<QuestionScreen> {
             child: SizedBox(
               width: double.infinity,
               height: 56,
-              child: ElevatedButton(
-                onPressed: _handleNext,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF2A2A2A),
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF222222), Color(0xFF999999)],
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
                   ),
-                  elevation: 0,
                 ),
-                child: const Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      'Next',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
+                child: ElevatedButton(
+                  onPressed: _handleNext,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.transparent,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                    SizedBox(width: 8),
-                    Icon(Icons.arrow_forward, size: 20),
-                  ],
+                    elevation: 0,
+                  ),
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Next',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      SizedBox(width: 8),
+                      Icon(Icons.arrow_forward, size: 20),
+                    ],
+                  ),
                 ),
               ),
             ),

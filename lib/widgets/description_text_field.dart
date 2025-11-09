@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-
 class DescriptionTextField extends StatefulWidget {
   final TextEditingController controller;
   final int maxLength;
@@ -29,7 +28,7 @@ class _DescriptionTextFieldState extends State<DescriptionTextField>
       vsync: this,
       duration: const Duration(milliseconds: 300),
     );
-        
+
     _focusNode.addListener(_onFocusChange);
     widget.controller.addListener(_onTextChange);
 
@@ -86,16 +85,16 @@ class _DescriptionTextFieldState extends State<DescriptionTextField>
             boxShadow: _isFocused
                 ? [
                     BoxShadow(
-                      color: const Color(0xFF5BA3F5).withAlpha((255 * 0.5).round()),
+                      color: const Color(
+                        0xFF5BA3F5,
+                      ).withAlpha((255 * 0.5).round()),
                       blurRadius: 8.0,
                       spreadRadius: 1.0,
                     ),
                   ]
                 : [],
             border: Border.all(
-              color: _isFocused
-                  ? const Color(0xFF5BA3F5)
-                  : Colors.transparent,
+              color: _isFocused ? const Color(0xFF5BA3F5) : Colors.transparent,
               width: 2,
             ),
           ),
@@ -122,8 +121,10 @@ class _DescriptionTextFieldState extends State<DescriptionTextField>
                   end: RelativeRect.fromLTRB(16, 8, 16, 0),
                 ).animate(_animationController),
                 child: ScaleTransition(
-                  scale: Tween<double>(begin: 1.0, end: 0.85)
-                      .animate(_animationController),
+                  scale: Tween<double>(
+                    begin: 1.0,
+                    end: 0.85,
+                  ).animate(_animationController),
                   alignment: Alignment.topLeft,
                   child: IgnorePointer(
                     child: Text(

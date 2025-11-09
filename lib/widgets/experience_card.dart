@@ -32,13 +32,15 @@ class ExperienceCard extends StatelessWidget {
           ],
         ),
         child: Container(
-          color: Colors.transparent, // Transparent background to show image borders
+          color: Colors
+              .transparent, // Transparent background to show image borders
           child: isSelected
               ? CachedNetworkImage(
                   imageUrl: experience.imageUrl,
                   width: double.infinity,
                   height: double.infinity,
-                  fit: BoxFit.contain, // Use contain to show full image without cuts
+                  fit: BoxFit
+                      .contain, // Use contain to show full image without cuts
                   alignment: Alignment.center,
                   placeholder: (context, url) => Container(
                     color: Colors.grey[800],
@@ -53,16 +55,33 @@ class ExperienceCard extends StatelessWidget {
                 )
               : ColorFiltered(
                   colorFilter: const ColorFilter.matrix([
-                    0.2126, 0.7152, 0.0722, 0, 0,
-                    0.2126, 0.7152, 0.0722, 0, 0,
-                    0.2126, 0.7152, 0.0722, 0, 0,
-                    0, 0, 0, 1, 0,
+                    0.2126,
+                    0.7152,
+                    0.0722,
+                    0,
+                    0,
+                    0.2126,
+                    0.7152,
+                    0.0722,
+                    0,
+                    0,
+                    0.2126,
+                    0.7152,
+                    0.0722,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    1,
+                    0,
                   ]),
                   child: CachedNetworkImage(
                     imageUrl: experience.imageUrl,
                     width: double.infinity,
                     height: double.infinity,
-                    fit: BoxFit.contain, // Use contain to show full image without cuts
+                    fit: BoxFit
+                        .contain, // Use contain to show full image without cuts
                     alignment: Alignment.center,
                     placeholder: (context, url) => Container(
                       color: Colors.grey[800],
