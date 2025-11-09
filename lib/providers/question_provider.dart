@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'dart:io';
 
 class QuestionState {
   final String text;
@@ -27,15 +28,19 @@ class QuestionState {
     bool? isRecordingVideo,
     Duration? audioDuration,
     Duration? videoDuration,
+    bool clearAudioPath = false,
+    bool clearVideoPath = false,
+    bool clearAudioDuration = false,
+    bool clearVideoDuration = false,
   }) {
     return QuestionState(
       text: text ?? this.text,
-      audioPath: audioPath ?? this.audioPath,
-      videoPath: videoPath ?? this.videoPath,
+      audioPath: clearAudioPath ? null : (audioPath ?? this.audioPath),
+      videoPath: clearVideoPath ? null : (videoPath ?? this.videoPath),
       isRecordingAudio: isRecordingAudio ?? this.isRecordingAudio,
       isRecordingVideo: isRecordingVideo ?? this.isRecordingVideo,
-      audioDuration: audioDuration ?? this.audioDuration,
-      videoDuration: videoDuration ?? this.videoDuration,
+      audioDuration: clearAudioDuration ? null : (audioDuration ?? this.audioDuration),
+      videoDuration: clearVideoDuration ? null : (videoDuration ?? this.videoDuration),
     );
   }
 
@@ -76,11 +81,45 @@ class QuestionNotifier extends StateNotifier<QuestionState> {
   }
 
   void deleteAudio() {
-    state = state.copyWith(audioPath: null, audioDuration: null);
+    // Delete audio file if it exists
+    final audioPathToDelete = state.audioPath;
+    if (audioPathToDelete != null) {
+      try {
+        final file = File(audioPathToDelete);
+        if (file.existsSync()) {
+          file.deleteSync();
+        }
+      } catch (e) {
+        // Ignore delete errors
+      }
+    }
+    // Update state to remove audio
+    state = state.copyWith(
+      clearAudioPath: true,
+      clearAudioDuration: true,
+      isRecordingAudio: false,
+    );
   }
 
   void deleteVideo() {
-    state = state.copyWith(videoPath: null, videoDuration: null);
+    // Delete video file if it exists
+    final videoPathToDelete = state.videoPath;
+    if (videoPathToDelete != null) {
+      try {
+        final file = File(videoPathToDelete);
+        if (file.existsSync()) {
+          file.deleteSync();
+        }
+      } catch (e) {
+        // Ignore delete errors
+      }
+    }
+    // Update state to remove video
+    state = state.copyWith(
+      clearVideoPath: true,
+      clearVideoDuration: true,
+      isRecordingVideo: false,
+    );
   }
 
   void reset() {

@@ -125,7 +125,18 @@ class AudioRecorderWidgetState extends ConsumerState<AudioRecorderWidget> {
   Future<void> _stopRecording({bool save = true}) async {
     try {
       _timer?.cancel();
-      final path = await _audioRecorder.stop();
+      
+      if (!_isRecording) {
+        return;
+      }
+
+      String? path;
+      try {
+        path = await _audioRecorder.stop();
+      } catch (e) {
+        // If stop fails, try to get path from stored _audioPath
+        path = _audioPath;
+      }
 
       setState(() {
         _isRecording = false;
@@ -134,13 +145,40 @@ class AudioRecorderWidgetState extends ConsumerState<AudioRecorderWidget> {
       ref.read(questionProvider.notifier).setRecordingAudio(false);
 
       if (save && path != null) {
-        ref
-            .read(questionProvider.notifier)
-            .setAudioPath(path, duration: _recordedDuration);
+        // Verify file exists before saving
+        if (File(path).existsSync()) {
+          ref
+              .read(questionProvider.notifier)
+              .setAudioPath(path, duration: _recordedDuration);
+        } else {
+          // File doesn't exist, try using stored path
+          if (_audioPath != null && File(_audioPath!).existsSync()) {
+            ref
+                .read(questionProvider.notifier)
+                .setAudioPath(_audioPath!, duration: _recordedDuration);
+          } else {
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Error: Recording file not found')),
+              );
+            }
+          }
+        }
       } else {
         // Delete the file if cancelled
+        if (path != null && File(path).existsSync()) {
+          try {
+            await File(path).delete();
+          } catch (e) {
+            // Ignore delete errors
+          }
+        }
         if (_audioPath != null && File(_audioPath!).existsSync()) {
-          await File(_audioPath!).delete();
+          try {
+            await File(_audioPath!).delete();
+          } catch (e) {
+            // Ignore delete errors
+          }
         }
         setState(() {
           _recordedDuration = Duration.zero;
@@ -153,6 +191,10 @@ class AudioRecorderWidgetState extends ConsumerState<AudioRecorderWidget> {
           context,
         ).showSnackBar(SnackBar(content: Text('Error stopping recording: $e')));
       }
+      setState(() {
+        _isRecording = false;
+      });
+      ref.read(questionProvider.notifier).setRecordingAudio(false);
     }
   }
 
@@ -199,6 +241,20 @@ class AudioRecorderWidgetState extends ConsumerState<AudioRecorderWidget> {
   Widget build(BuildContext context) {
     final questionState = ref.watch(questionProvider);
 
+    // Reset internal state if audio was deleted externally
+    if (!questionState.hasAudio && _audioPath != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          setState(() {
+            _audioPath = null;
+            _isPlaying = false;
+            _recordedDuration = Duration.zero;
+          });
+          _audioPlayer.stop();
+        }
+      });
+    }
+
     if (questionState.hasAudio && !_isRecording) {
       // Show recorded audio preview
       return _buildAudioPreview();
@@ -222,15 +278,18 @@ class AudioRecorderWidgetState extends ConsumerState<AudioRecorderWidget> {
       ),
       child: Row(
         children: [
-          // Checkmark icon
-          Container(
-            width: 32,
-            height: 32,
-            decoration: const BoxDecoration(
-              color: Color(0xFF5BA3F5),
-              shape: BoxShape.circle,
+          // Checkmark button (save recording)
+          GestureDetector(
+            onTap: () => _stopRecording(save: true),
+            child: Container(
+              width: 32,
+              height: 32,
+              decoration: const BoxDecoration(
+                color: Color(0xFF5BA3F5),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.check, color: Colors.white, size: 20),
             ),
-            child: const Icon(Icons.check, color: Colors.white, size: 20),
           ),
           const SizedBox(width: 12),
           // Recording text and waveform
@@ -344,8 +403,9 @@ class AudioRecorderWidgetState extends ConsumerState<AudioRecorderWidget> {
           // Delete button
           IconButton(
             icon: const Icon(Icons.delete_outline, color: Colors.white),
-            onPressed: () {
-              _audioPlayer.stop();
+            onPressed: () async {
+              // Stop audio playback
+              await _audioPlayer.stop();
               ref.read(questionProvider.notifier).deleteAudio();
             },
           ),

@@ -67,12 +67,18 @@ class VideoRecorderWidgetState extends ConsumerState<VideoRecorderWidget> {
       return;
     }
 
+    // Set recording state to true
+    ref.read(questionProvider.notifier).setRecordingVideo(true);
+
     await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => VideoRecordingScreen(
           controller: _controller!,
           onStop: (path, duration, saved) {
+            // Set recording state to false
+            ref.read(questionProvider.notifier).setRecordingVideo(false);
+            
             if (saved && path != null) {
               ref
                   .read(questionProvider.notifier)
@@ -121,7 +127,7 @@ class VideoRecorderWidgetState extends ConsumerState<VideoRecorderWidget> {
           // Video thumbnail with play button
           GestureDetector(
             onTap: () {
-              if (videoPath != null) {
+              if (videoPath != null && File(videoPath).existsSync()) {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -136,11 +142,15 @@ class VideoRecorderWidgetState extends ConsumerState<VideoRecorderWidget> {
                 ClipRRect(
                   borderRadius: BorderRadius.circular(8),
                   child: videoPath != null && File(videoPath).existsSync()
-                      ? Image.file(
-                          File(videoPath),
+                      ? Container(
                           width: 60,
                           height: 60,
-                          fit: BoxFit.cover,
+                          color: Colors.grey[800],
+                          child: const Icon(
+                            Icons.videocam,
+                            color: Colors.white,
+                            size: 30,
+                          ),
                         )
                       : Container(
                           width: 60,
@@ -250,9 +260,21 @@ class _VideoRecordingScreenState extends State<VideoRecordingScreen> {
   Future<void> _stopRecording({bool save = true}) async {
     _timer?.cancel();
 
-    if (widget.controller.value.isRecordingVideo) {
-      final file = await widget.controller.stopVideoRecording();
-      widget.onStop(save ? file.path : null, _recordedDuration, save);
+    try {
+      if (widget.controller.value.isRecordingVideo) {
+        final file = await widget.controller.stopVideoRecording();
+        widget.onStop(save ? file.path : null, _recordedDuration, save);
+      } else {
+        // If not recording, just close
+        widget.onStop(null, Duration.zero, false);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error stopping recording: $e')),
+        );
+      }
+      widget.onStop(null, Duration.zero, false);
     }
 
     if (mounted) {

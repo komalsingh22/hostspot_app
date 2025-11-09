@@ -86,7 +86,7 @@ class _DescriptionTextFieldState extends State<DescriptionTextField>
             boxShadow: _isFocused
                 ? [
                     BoxShadow(
-                      color: const Color(0xFF5BA3F5).withOpacity(0.5),
+                      color: const Color(0xFF5BA3F5).withAlpha((255 * 0.5).round()),
                       blurRadius: 8.0,
                       spreadRadius: 1.0,
                     ),

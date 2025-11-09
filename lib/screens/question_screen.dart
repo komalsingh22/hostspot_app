@@ -12,35 +12,16 @@ class QuestionScreen extends ConsumerStatefulWidget {
   ConsumerState<QuestionScreen> createState() => _QuestionScreenState();
 }
 
-class _QuestionScreenState extends ConsumerState<QuestionScreen>
-    with SingleTickerProviderStateMixin {
+class _QuestionScreenState extends ConsumerState<QuestionScreen> {
   final TextEditingController _textController = TextEditingController();
   final int _maxCharacterLimit = 600;
   final GlobalKey<AudioRecorderWidgetState> _audioRecorderKey = GlobalKey();
   final GlobalKey<VideoRecorderWidgetState> _videoRecorderKey = GlobalKey();
-  late AnimationController _buttonAnimationController;
-  late Animation<double> _buttonWidthAnimation;
 
   @override
   void initState() {
     super.initState();
     _textController.addListener(_onTextChanged);
-
-    // Animation for button width
-    _buttonAnimationController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 300),
-    );
-    _buttonWidthAnimation =
-        Tween<double>(
-          begin: 0.7, // 70% width when buttons are visible
-          end: 1.0, // 100% width when buttons are hidden
-        ).animate(
-          CurvedAnimation(
-            parent: _buttonAnimationController,
-            curve: Curves.easeInOut,
-          ),
-        );
   }
 
   void _onTextChanged() {
@@ -60,19 +41,7 @@ class _QuestionScreenState extends ConsumerState<QuestionScreen>
   void dispose() {
     _textController.removeListener(_onTextChanged);
     _textController.dispose();
-    _buttonAnimationController.dispose();
     super.dispose();
-  }
-
-  void _updateButtonAnimation() {
-    final questionState = ref.read(questionProvider);
-    final hasMedia = questionState.hasMedia;
-
-    if (hasMedia) {
-      _buttonAnimationController.forward();
-    } else {
-      _buttonAnimationController.reverse();
-    }
   }
 
   void _handleNext() {
@@ -103,11 +72,6 @@ class _QuestionScreenState extends ConsumerState<QuestionScreen>
   Widget build(BuildContext context) {
     final questionState = ref.watch(questionProvider);
     final characterCount = _textController.text.length;
-
-    // Update animation based on media state
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _updateButtonAnimation();
-    });
 
     return Scaffold(
       backgroundColor: const Color(0xFF1A1A1A),
@@ -182,7 +146,8 @@ class _QuestionScreenState extends ConsumerState<QuestionScreen>
         children: [
           // Back button
           IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.white),
+            icon: const Icon(Icons.arrow_back, color: Colors.white, size: 24),
+            iconSize: 24,
             onPressed: () => Navigator.pop(context),
           ),
           // Progress indicator - Blue waveform
@@ -199,7 +164,8 @@ class _QuestionScreenState extends ConsumerState<QuestionScreen>
           ),
           // Close button
           IconButton(
-            icon: const Icon(Icons.close, color: Colors.white),
+            icon: const Icon(Icons.close, color: Colors.white, size: 24),
+            iconSize: 24,
             onPressed: () => Navigator.pop(context),
           ),
         ],
@@ -251,104 +217,98 @@ class _QuestionScreenState extends ConsumerState<QuestionScreen>
   Widget _buildBottomActionBar(QuestionState questionState) {
     final hasMedia = questionState.hasMedia;
 
-    return AnimatedBuilder(
-      animation: _buttonWidthAnimation,
-      builder: (context, child) {
-        return Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: const Color(0xFF1A1A1A),
-            border: Border(top: BorderSide(color: Colors.grey[800]!, width: 1)),
-          ),
-          child: Row(
-            children: [
-              // Record buttons (hidden when media is recorded)
-              if (!hasMedia) ...[
-                Expanded(
-                  flex: 2,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF2A2A2A),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Row(
-                      children: [
-                        // Audio button
-                        Expanded(
-                          child: _buildRecordButton(
-                            icon: Icons.mic,
-                            isActive: questionState.isRecordingAudio,
-                            onTap: () {
-                              if (!questionState.hasAudio) {
-                                _audioRecorderKey.currentState
-                                    ?.startRecording();
-                              }
-                            },
-                          ),
-                        ),
-                        // Separator
-                        Container(
-                          width: 1,
-                          height: 40,
-                          color: Colors.grey[700],
-                        ),
-                        // Video button
-                        Expanded(
-                          child: _buildRecordButton(
-                            icon: Icons.videocam,
-                            isActive: questionState.isRecordingVideo,
-                            onTap: () {
-                              if (!questionState.hasVideo) {
-                                _videoRecorderKey.currentState
-                                    ?.startRecording();
-                              }
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1A1A1A),
+        border: Border(top: BorderSide(color: Colors.grey[800]!, width: 1)),
+      ),
+      child: Row(
+        children: [
+          // Record buttons (hidden when media is recorded)
+          if (!hasMedia) ...[
+            SizedBox(
+              width: MediaQuery.of(context).size.width * 0.35,
+              height: 56,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: const Color(0xFF2A2A2A),
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                const SizedBox(width: 12),
-              ],
-              // Next button (animated width)
-              Expanded(
-                flex: (hasMedia ? 1.0 : _buttonWidthAnimation.value * 1.0)
-                    .round(),
-                child: SizedBox(
-                  width: double.infinity,
-                  height: 56,
-                  child: ElevatedButton(
-                    onPressed: _handleNext,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF2A2A2A),
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                child: Row(
+                  children: [
+                    // Audio button
+                    Expanded(
+                      child: _buildRecordButton(
+                        icon: Icons.mic,
+                        isActive: questionState.isRecordingAudio,
+                        onTap: () {
+                          if (!questionState.hasAudio) {
+                            _audioRecorderKey.currentState
+                                ?.startRecording();
+                          }
+                        },
                       ),
-                      elevation: 0,
                     ),
-                    child: const Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          'Next',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        SizedBox(width: 8),
-                        Icon(Icons.arrow_forward, size: 20),
-                      ],
+                    // Separator
+                    Container(
+                      width: 1,
+                      height: 56,
+                      color: Colors.grey[700],
                     ),
-                  ),
+                    // Video button
+                    Expanded(
+                      child: _buildRecordButton(
+                        icon: Icons.videocam,
+                        isActive: questionState.isRecordingVideo,
+                        onTap: () {
+                          if (!questionState.hasVideo) {
+                            _videoRecorderKey.currentState
+                                ?.startRecording();
+                          }
+                        },
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ],
+            ),
+            const SizedBox(width: 12),
+          ],
+          // Next button (animated width)
+          Expanded(
+            child: SizedBox(
+              width: double.infinity,
+              height: 56,
+              child: ElevatedButton(
+                onPressed: _handleNext,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF2A2A2A),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  elevation: 0,
+                ),
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Next',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    SizedBox(width: 8),
+                    Icon(Icons.arrow_forward, size: 20),
+                  ],
+                ),
+              ),
+            ),
           ),
-        );
-      },
+        ],
+      ),
     );
   }
 
@@ -361,7 +321,8 @@ class _QuestionScreenState extends ConsumerState<QuestionScreen>
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12),
+        height: 56,
+        alignment: Alignment.center,
         child: Icon(
           icon,
           color: isActive ? const Color(0xFF5BA3F5) : Colors.white,
