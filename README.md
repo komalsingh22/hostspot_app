@@ -32,6 +32,12 @@ This project is built with Flutter and Dart, and utilizes the following packages
 
 https://github.com/user-attachments/assets/e2f2c546-cc8f-47df-930a-b134f91f1ba6
 
+## Images
+<img width="316" height="705" alt="Screenshot 2025-11-09 at 9 22 19 PM" src="https://github.com/user-attachments/assets/bf5ca28e-ae0e-40a4-a9ba-6e8b7c255931" />
+
+<img width="316" height="705" alt="Screenshot 2025-11-09 at 9 22 37 PM" src="https://github.com/user-attachments/assets/7d851334-595e-439d-b16b-0d465c5dc716" />
+
+<img width="316" height="705" alt="Screenshot 2025-11-09 at 9 22 49 PM" src="https://github.com/user-attachments/assets/ad77b11c-be2b-45bd-8054-1e19f0737ccf" />
 
 
 
